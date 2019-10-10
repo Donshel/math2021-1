@@ -25,4 +25,4 @@ data$rain <- data$rain > 0
 ## Write table
 dir.create("products", showWarnings = FALSE)
 dir.create("products/csv", showWarnings = FALSE)
-write.table(data, "products/csv/data.csv", sep = ",", quote = FALSE)
+write.table(data, "products/csv/data.csv", sep = ",", quote = FALSE, row.names = FALSE)
