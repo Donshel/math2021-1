@@ -1,5 +1,6 @@
 # Libraries
 library(ggplot2)
+library(reshape2)
 
 # ---------- PART 3.1 : Univariate exploratory analysis ----------
 data <- read.table("products/csv/data.csv", header = TRUE, na.strings = "NA", sep = ",")

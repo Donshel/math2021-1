@@ -16,4 +16,4 @@ data.pollutants <- data[c("rain", pollutants)]
 data.pollutants <- melt(data.pollutants, id.vars = "rain")
 plt <- ggplot(data = data.pollutants, aes(x = rain, y = value)) + geom_boxplot() 
 plt <- plt + facet_wrap( ~ variable, scales = "free")
-ggsave(filename = "products/pdf/pollutants~rain.pdf", plt)
+ggsave(filename = "products/pdf/pollutants_rain.pdf", plt)
