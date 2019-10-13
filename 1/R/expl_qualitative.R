@@ -9,7 +9,7 @@ attach(data)
 dir.create("products", showWarnings = FALSE)
 dir.create("products/pdf", showWarnings = FALSE)
 
-pollutants = c("PM2.5", "PM10", "SO2", "NO2", "CO", "O3")
+pollutants <- c("PM2.5", "PM10", "SO2", "NO2", "CO", "O3")
 
 # Pollutants' concentrations w.r.t. the rain
 data.pollutants <- data[c("rain", pollutants)]

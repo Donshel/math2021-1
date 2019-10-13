@@ -13,7 +13,7 @@ dir.create("products/pdf", showWarnings = FALSE)
 
 ## Overview
 ### Relative pollutants' concentration
-pollutants = c("PM2.5", "PM10", "SO2", "NO2", "CO", "O3")
+pollutants <- c("PM2.5", "PM10", "SO2", "NO2", "CO", "O3")
 rel_pollutants <- data
 for (p in pollutants) {
     rel_pollutants[, p] <- rel_pollutants[, p] / max(rel_pollutants[, p], na.rm = TRUE) # should be better with sd (standart deviation) instead of max
@@ -27,12 +27,11 @@ dev.off()
 
 ### Pollutant's pairs scatterplots
 set.seed(0)
-NB_SAMPLES = 100
-sampled_indexes = sample(1:nrow(data), NB_SAMPLES)
+NB_SAMPLES <- 100
+sampled_indexes <- sample(1:nrow(data), NB_SAMPLES)
 pdf("products/pdf/pairs_pollutants.pdf")
 pairs(data[sampled_indexes, pollutants])
 dev.off()
-
 
 ## Temperature
 ### Relative pollutants' concentration w.r.t. temperatures
@@ -85,7 +84,7 @@ plt <- ggplot(data.pollutants, aes(x = wspd, y = value, color = variable)) + geo
 ggsave(filename = "products/pdf/pollutants_wspd.pdf", plt)
 
 ### Median temperatures w.r.t. the wind direction
-temp_wdir = aggregate(temp ~ wdir, data, median)
+temp_wdir <- aggregate(temp ~ wdir, data, median)
 plt <- ggplot(temp_wdir, aes(x = as.factor(wdir), y = temp)) +
     geom_bar(stat = "identity", fill = alpha("blue", 0.3)) +
     ylim(-25, 25) +
@@ -101,7 +100,7 @@ ggsave(filename = "products/pdf/temp_wdir.pdf", plt)
 
 ### Relative median pollutant's concentration w.r.t. the wind direction
 data.pollutants <- data[c("wdir", pollutants)]
-data.pollutants = aggregate(. ~ wdir, data.pollutants, median)
+data.pollutants <- aggregate(. ~ wdir, data.pollutants, median)
 for (p in pollutants) {
     data.pollutants[, p] <- data.pollutants[, p] / max(data.pollutants[, p], na.rm = TRUE)
 }
