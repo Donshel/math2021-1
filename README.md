@@ -8,4 +8,6 @@ These projects have been developed using [R](https://www.r-project.org/).
 
 ## Authors
 
+* **Yann Claes** - [yannclaes](https://github.com/yannclaes)
+* **Gaspard Lambrechts** - [lgaspard](https://github.com/lgaspard)
 * **François Rozet** - [Donshel](https://github.com/Donshel)
