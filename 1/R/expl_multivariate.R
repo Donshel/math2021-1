@@ -11,13 +11,11 @@ attach(data)
 dir.create("products", showWarnings = FALSE)
 dir.create("products/pdf", showWarnings = FALSE)
 
-
 ## Overview
 ### Z-Scores of pollutant concentrations
 pollutants <- c("PM2.5", "PM10", "SO2", "NO2", "CO", "O3")
 z_pollutants <- data
 z_pollutants[pollutants] <- scale(z_pollutants[pollutants])
-
 
 ### Overview of the correlation between variables
 corr <- cor(data)
@@ -25,7 +23,7 @@ pdf("products/pdf/correlation.pdf")
 corrplot(corr, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
 dev.off()
 
- ### Pollutant's pairs scatterplots
+### Pollutant's pairs scatterplots
 set.seed(0)
 NB_SAMPLES <- 100
 sampled_indexes <- sample(1:nrow(data), NB_SAMPLES)
@@ -45,7 +43,7 @@ plt <- plt + labs(
     colour = "Pollutant",
     fill = "Pollutant",
     y = "Z-Scores of Pollutant Concentrations [-]", 
-    x = "Temperature [°C]"
+    x = expression("Temperature ["*degree*"C]")
 )
 ggsave(filename = "products/pdf/pollutants_temp.pdf", plt)
 
@@ -56,14 +54,14 @@ temp_month = data.frame(temperature = temp, day = day_in_year)
 
 plt <- ggplot(temp_month, aes(x = day_in_year, y = temperature))
 plt <- plt + geom_point() + geom_smooth()
-plt <- plt + labs(y = "Temperature [°C]", x = "Day of the Year")
+plt <- plt + labs(y = expression("Temperature ["*degree*"C]"), x = "Day of the Year")
 ggsave("products/pdf/temp_months.pdf", plt)
 
 ### Meteorological dependance to temperature
-plt <- ggplot(data, aes(x = pres, y = dewp, colour = temp))
+plt <- ggplot(data, aes(x = pres, y = dewp, color = temp))
 plt <- plt + geom_point() + scale_color_gradient(low = "blue", high = "orange")
+plt <- plt + labs(x = "Pressure [hPa]", y = expression("Dew point ["*degree*"C]"), color = expression("Temp. ["*degree*"C]"))
 ggsave(filename = "products/pdf/pres_dewp_temp.pdf", plt)
-
 
 ## Time
 ### Z-Scores of pollutant concentrations over the days of the year
@@ -90,7 +88,6 @@ plt <- plt + labs(
     x = "Hour"
 )
 ggsave(filename = "products/pdf/pollutants_hour.pdf", plt)
-
 
 ## Wind speed and wind direction
 ### Relative pollutant's concentration w.r.t. wind speed
