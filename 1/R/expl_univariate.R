@@ -11,7 +11,11 @@ dir.create("products", showWarnings = FALSE)
 dir.create("products/pdf", showWarnings = FALSE)
 
 quantitative_cols <- c("PM2.5", "PM10", "SO2", "NO2", "CO", "O3", "temp", "pres", "dewp", "wspd")
-data.histograms <- melt(data[, quantitative_cols])
-plt <- ggplot(data.histograms, aes(x = value)) + geom_histogram()
-plt <- plt+ facet_wrap( ~ variable, scales = "free") + labs(x = "", y = "")
+quantitative_data <- data[, quantitative_cols]
+
+summary(quantitative_data)
+
+melted <- melt(quantitative_data)
+plt <- ggplot(melted, aes(x = value)) + geom_histogram()
+plt <- plt + facet_wrap( ~ variable, scales = "free") + labs(x = "", y = "")
 ggsave("products/pdf/histograms.pdf", plt)
