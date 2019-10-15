@@ -8,13 +8,13 @@ data <- subset(data, select = -c(station))
 
 ## Sample randomly 500 rows
 set.seed(0)
-data <- data[sample.int(nrow(data), 500),]
+data <- data[sample.int(nrow(data), 500), ]
 
 ## Convert "year", "month", "day" and "hour" to a "timestamp" variable and replace "index"
 data$index <- as.numeric(strptime(paste(data$year, data$month, data$day, data$hour, sep = "-"), "%Y-%m-%d-%H"))
 colnames(data)[1] <- "timestamp"
 
-## Convert the compass-like wind direction ("wdir") to sine ("wdir_sin") and cosine ("wdir_cos")
+## Convert the compass-like wind direction ("wdir") to radians from east direction, going counter-clockwise 
 compass <- c("E", "ENE", "NE", "NNE", "N", "NNW", "NW", "WNW", "W", "WSW", "SW", "SSW", "S", "SSE", "SE", "ESE")
 angles <- c(seq(0, 15, 1) * pi / 8)
 data$wdir <- angles[match(data$wdir, compass)]
