@@ -2,30 +2,30 @@
 library(ggplot2)
 library(corrplot)
 library(reshape2)
-library(tidyverse)
 
 # ---------- PART 3.2 : Multivariate exploratory analysis ----------
 data <- read.table("products/csv/data.csv", header = TRUE, na.strings = "NA", sep = ",")
+data <- data[complete.cases(data), ]
 attach(data)
 
 dir.create("products", showWarnings = FALSE)
 dir.create("products/pdf", showWarnings = FALSE)
 
+
 ## Overview
-### Relative pollutants' concentration
+### Z-Scores of pollutant concentrations
 pollutants <- c("PM2.5", "PM10", "SO2", "NO2", "CO", "O3")
-rel_pollutants <- data
-for (p in pollutants) {
-    rel_pollutants[, p] <- rel_pollutants[, p] / max(rel_pollutants[, p], na.rm = TRUE) # should be better with sd (standart deviation) instead of max
-}
+z_pollutants <- data
+z_pollutants[pollutants] <- scale(z_pollutants[pollutants])
+
 
 ### Overview of the correlation between variables
-corr <- cor(data, use = "complete.obs")
+corr <- cor(data)
 pdf("products/pdf/correlation.pdf")
-corrplot(corr)
+corrplot(corr, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
 dev.off()
 
-### Pollutant's pairs scatterplots
+ ### Pollutant's pairs scatterplots
 set.seed(0)
 NB_SAMPLES <- 100
 sampled_indexes <- sample(1:nrow(data), NB_SAMPLES)
@@ -34,87 +34,128 @@ pairs(data[sampled_indexes, pollutants])
 dev.off()
 
 ## Temperature
-### Relative pollutants' concentration w.r.t. temperatures
-data.pollutants <- melt(rel_pollutants[c("temp", pollutants)], id.vars = "temp")
-plt <- ggplot(data.pollutants, aes(x = temp, y = value, color = variable)) + geom_point() + 
-    geom_smooth() + labs(colour = "Pollutant", y = "Relative Pollutant Concentration", 
-    x = "Temperature in °C")
+### Z-Scores of pollutant concentrations w.r.t. temperatures
+NB_MAX_STD <- 3 # y limit of 3 times the std for plots
+limits = c(max(min(z_pollutants[pollutants]), -3), min(max(z_pollutants[pollutants]), 3))
+pollutants_temp <- melt(z_pollutants[c("temp", pollutants)], id.vars = "temp")
+
+plt <- ggplot(pollutants_temp, aes(x = temp, y = value, color = variable)) 
+plt <- plt + geom_point() + geom_smooth(aes(fill = variable)) + coord_cartesian(ylim = limits)
+plt <- plt + labs(
+    colour = "Pollutant",
+    fill = "Pollutant",
+    y = "Z-Scores of Pollutant Concentrations [-]", 
+    x = "Temperature [°C]"
+)
 ggsave(filename = "products/pdf/pollutants_temp.pdf", plt)
 
 ### Temperature w.r.t. the month
 spd <- 3600 * 24 * 365
 day_in_year <- (timestamp %% spd) / (3600 * 24)
+temp_month = data.frame(temperature = temp, day = day_in_year)
 
-model <- nls(temp ~ a * sin(2 * pi * day_in_year/365 + b) + c, 
-    start = list(a = mean(temp, na.rm = TRUE), b = 0, c = mean(temp, na.rm = TRUE)))
-x <- seq(0, 365, length.out = 100)
-y <- predict(model, newdata = list(day_in_year = x))
-pdf("products/pdf/temp_months.pdf")
-plot(day_in_year, temp, pch = 19)
-lines(x, y, col = "red", lty = 2, lwd = 3)
-dev.off()
+plt <- ggplot(temp_month, aes(x = day_in_year, y = temperature))
+plt <- plt + geom_point() + geom_smooth()
+plt <- plt + labs(y = "Temperature [°C]", x = "Day of the Year")
+ggsave("products/pdf/temp_months.pdf", plt)
 
 ### Meteorological dependance to temperature
-plt <- ggplot(data, aes(x = temp, y = pres, colour = dewp)) + geom_point() + 
-    scale_color_gradient(low = "blue", high = "orange")
+plt <- ggplot(data, aes(x = pres, y = dewp, colour = temp))
+plt <- plt + geom_point() + scale_color_gradient(low = "blue", high = "orange")
 ggsave(filename = "products/pdf/pres_dewp_temp.pdf", plt)
 
 
 ## Time
-### Relative pollutants' concentrations over the days of the year
-data.pollutants <- melt(rel_pollutants[c("month", "day", pollutants)], id.vars = c("month", "day"))
-plt <- ggplot(data.pollutants, aes(x = ((month - 1)*27.83 + day), y = value, color = variable)) + 
-    geom_point() + geom_smooth() + labs(colour = "Pollutant", y = "Relative Pollutant Concentration",
-    x = "Day in Year")
+### Z-Scores of pollutant concentrations over the days of the year
+pollutants_months <- melt(z_pollutants[c("month", "day", pollutants)], id.vars = c("month", "day"))
+
+plt <- ggplot(pollutants_months, aes(x = ((month - 1)*27.83 + day), y = value, color = variable))
+plt <- plt + geom_point() + geom_smooth(aes(fill = variable)) + coord_cartesian(ylim = limits)
+plt <- plt + labs(
+    fill = "Pollutant",
+    colour = "Pollutant",
+    y = "Z-Scores of Pollutant Concentrations [-]",
+    x = "Day in Year"
+) 
 ggsave(filename = "products/pdf/pollutants_months.pdf", plt)
 
 ### Relative pollutant's concentration over the hours
-data.pollutants <- melt(rel_pollutants[c("hour", pollutants)], id.vars = "hour")
-plt <- ggplot(data.pollutants, aes(x = hour, y = value, color = variable)) + geom_point() + 
-    geom_smooth() + labs(colour = "Pollutant", y = "Relative Pollutant Concentration", x = "Hour")
+pollutants_hours <- melt(z_pollutants[c("hour", pollutants)], id.vars = "hour")
+plt <- ggplot(pollutants_hours, aes(x = hour, y = value, color = variable)) 
+plt <- plt + geom_point() + geom_smooth(aes(fill = variable)) + coord_cartesian(ylim = limits)
+plt <- plt + labs(
+    fill = "Pollutant",
+    colour = "Pollutant",
+    y = "Z-Scores Pollutant Concentrations [-]",
+    x = "Hour"
+)
 ggsave(filename = "products/pdf/pollutants_hour.pdf", plt)
 
 
 ## Wind speed and wind direction
 ### Relative pollutant's concentration w.r.t. wind speed
-data.pollutants <- melt(rel_pollutants[c("wspd", pollutants)], id.vars = "wspd")
-plt <- ggplot(data.pollutants, aes(x = wspd, y = value, color = variable)) + geom_point() + 
-    geom_smooth() + labs(colour = "Pollutant", y = "Relative Pollutant Concentration", 
-    x = "Wind Speed in m/s")
+pollutants_wspd <- melt(z_pollutants[c("wspd", pollutants)], id.vars = "wspd")
+plt <- ggplot(pollutants_wspd, aes(x = wspd, y = value, color = variable))
+plt <- plt + geom_point() + geom_smooth(aes(fill = variable)) + coord_cartesian(ylim=limits)
+plt <- plt + labs(
+    fill = "Pollutant",
+    colour = "Pollutant",
+    y = "Z-Scores of Pollutant Concentrations [-]", 
+    x = "Wind Speed [m/s]"
+)
 ggsave(filename = "products/pdf/pollutants_wspd.pdf", plt)
 
+### Median wind speed w.r.t. the wind direction
+medianwspd_wdir <- aggregate(wspd ~ wdir, data, median)
+max_medianwspd <- max(medianwspd_wdir["wspd"])
+
+plt <- ggplot(medianwspd_wdir, aes(x = as.factor(wdir), y = wspd))
+plt <- plt + geom_bar(stat = "identity", fill = alpha("blue", 0.3))
+plt <- plt + ylim(- 1.15 * max_medianwspd, 1.15 * max_medianwspd)
+plt <- plt + theme_minimal() + theme(
+    axis.text = element_blank(),
+    axis.text.y = element_text(colour = "grey30", margin = margin(l = 0, t = 0, b = 0, r = -230)),
+    axis.title = element_blank(),
+    plot.margin = margin(l = 230, t = 0, b = 0, r = 0) 
+)
+plt <- plt + coord_polar(start = - pi/2 + 1/16/2 * 2*pi, direction = -1)
+ggsave(filename = "products/pdf/medianwspd_wdir.pdf", plt)
+
 ### Median temperatures w.r.t. the wind direction
-temp_wdir <- aggregate(temp ~ wdir, data, median)
-plt <- ggplot(temp_wdir, aes(x = as.factor(wdir), y = temp)) +
-    geom_bar(stat = "identity", fill = alpha("blue", 0.3)) +
-    ylim(-25, 25) +
-    theme_minimal() +
-    theme(
-        axis.text = element_blank(),
-        axis.text.y = element_text(colour = "grey30", margin = margin(l = 0, t = 0, b = 0, r = -260)),
-        axis.title = element_blank(),
-        plot.margin = margin(l = 260, t = 0, b = 0, r = 0) 
-    ) + 
-    coord_polar(start = - pi/2 + 1/16/2 * 2*pi, direction = -1)
-ggsave(filename = "products/pdf/temp_wdir.pdf", plt)
+mediantemp_wdir <- aggregate(temp ~ wdir, data, median)
+limits <- max(abs(mediantemp_wdir["temp"]))
 
-### Relative median pollutant's concentration w.r.t. the wind direction
-data.pollutants <- data[c("wdir", pollutants)]
-data.pollutants <- aggregate(. ~ wdir, data.pollutants, median)
-for (p in pollutants) {
-    data.pollutants[, p] <- data.pollutants[, p] / max(data.pollutants[, p], na.rm = TRUE)
-}
-data.pollutants <- melt(data.pollutants, id = "wdir")
+plt <- ggplot(mediantemp_wdir, aes(x = as.factor(wdir), y = temp))
+plt <- plt + geom_bar(stat = "identity", fill = alpha("blue", 0.3))
+plt <- plt + ylim(-1.15*limits, 1.15*limits)
+plt <- plt + theme_minimal() + theme(
+    axis.text = element_blank(),
+    axis.text.y = element_text(colour = "grey30", margin = margin(l = 0, t = 0, b = 0, r = -230)),
+    axis.title = element_blank(),
+    plot.margin = margin(l = 230, t = 0, b = 0, r = 0) 
+)
+plt <- plt + coord_polar(start = - pi/2 + 1/16/2 * 2*pi, direction = -1)
+ggsave(filename = "products/pdf/mediantemp_wdir.pdf", plt)
 
-plt <- ggplot(data.pollutants, aes(x = as.factor(wdir), y = value, color = variable)) + 
-    geom_bar(stat = "identity", aes(fill = variable), position = "dodge") +
-    ylim(-1, 1) +
-    theme_minimal() +
-    theme(
-        axis.text = element_blank(),
-        axis.text.y = element_text(colour = "grey30", margin = margin(l = 0, t = 0, b = 0, r = -230)),
-        axis.title = element_blank(),
-        plot.margin = margin(l = 230, t = 0, b = 0, r = 0)
-    ) + 
-    coord_polar(start = - pi/2 + 1/16/2 * 2*pi, direction = -1)
-ggsave(filename = "products/pdf/pollutants_wdir.pdf", plt)
+### Scaled (by std) median pollutant's concentration w.r.t. the wind direction
+medianpollutants_wdir <- data[c("wdir", pollutants)]
+scaled <- scale(medianpollutants_wdir[pollutants], center = FALSE)
+medianpollutants_wdir[pollutants] <- scaled
+
+medianpollutants_wdir <- aggregate(. ~ wdir, medianpollutants_wdir, median)
+medianpollutants_wdir <- melt(medianpollutants_wdir[c("wdir", pollutants)], id = "wdir")
+limits <- max(abs(medianpollutants_wdir["value"]))
+
+plt <- ggplot(medianpollutants_wdir, aes(x = as.factor(wdir), y = value)) 
+plt <- plt + geom_bar(stat = "identity", aes(fill = variable), position = "dodge")
+plt <- plt + labs(color = "Poluttants", fill = "Pollutants")
+plt <- plt + ylim(-1.15 * limits, 1.15 * limits)
+plt <- plt + theme_minimal()
+plt <- plt + theme(
+    axis.text = element_blank(),
+    axis.text.y = element_text(colour = "grey30", margin = margin(l = 0, t = 0, b = 0, r = -230)),
+    axis.title = element_blank(),
+    plot.margin = margin(l = 230, t = 0, b = 0, r = 0)
+)
+plt <- plt + coord_polar(start = - pi/2 + 1/16/2 * 2*pi, direction = -1)
+ggsave(filename = "products/pdf/medianpollutants_wdir.pdf", plt)
