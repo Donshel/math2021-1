@@ -1,6 +1,7 @@
 # ---------- Libraries ----------
 library(naniar)
 library(plotrix)
+library(ggplot2)
 library(colorspace)
 
 # ---------- PART 2 : Missingness ----------
