@@ -2,6 +2,7 @@
 library(MASS)
 library(reshape2)
 library(ggplot2)
+library(hexbin)
 
 # ---------- PART 3.1 : Robust Outlier Detection ----------
 data <- read.table("products/csv/data.csv", header = TRUE, na.strings = NA, sep = ",")
@@ -15,9 +16,9 @@ quantitative_cols <- c("PM2.5", "PM10", "SO2", "NO2", "CO", "O3", "temp", "pres"
 quantitative_data <- data[quantitative_cols]
 
 ## Use MCD estimator (Coverage parameter of 0.75)
-COVERAGE <- 0.75
+h <- floor((dim(quantitative_data)[1] + dim(quantitative_data)[2] + 1)/2)
 set.seed(0)
-robust <- cov.rob(quantitative_data, cor = TRUE, quantile.used = COVERAGE * dim(data)[1], method = "mcd")
+robust <- cov.rob(quantitative_data, cor = TRUE, quantile.used = h, method = "mcd")
 
 ## Retrieve robust means and covariance matrix
 robust_mean <- robust$center
@@ -41,4 +42,8 @@ plt <- ggplot(distances, aes(x = distances[, 1], y = distances[, 2]))
 plt <- plt + geom_point() + geom_vline(xintercept = qchisq(0.95, dim(quantitative_data)[2]), col = "red") 
 plt <- plt + geom_hline(yintercept = qchisq(0.95, dim(quantitative_data)[2]), col = "red") 
 plt <- plt + labs(x = "Classic Mahalanobis distances", y = "Robust Mahalanobis distances")
-ggsave(filename = "products/pdf/compare_maha.pdf")
+ggsave(filename = "products/pdf/compare_maha_most_robust.pdf")
+
+rob_outliers_rate <- sum(robust_maha > qchisq(.95, dim(quantitative_data)[2]))/dim(data)[1]
+classical_outliers_rate <- sum(classic_maha > qchisq(.95, dim(quantitative_data)[2]))/dim(data)[1]
+
