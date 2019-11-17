@@ -1,4 +1,7 @@
 .DS_Store
-**/products/pdf
-**/.Rhistory
+
+**/products/pdf/
 *.synctex.gz
+
+*.Rhistory
+*.RData
