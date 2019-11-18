@@ -22,7 +22,7 @@ quantitative_data <- data[quantitative_cols]
 
 # The correlation matrix of the data can be connected with the result of the PCA
 corr <- cor(quantitative_data)
-corrplot(corr)
+corrplot(corr, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
 
 # P.C. and their corresponding percentage of total variance (scree plot)
 res_PCA <- princomp(quantitative_data, cor = TRUE)
@@ -49,12 +49,12 @@ dev.off()
 # Correlation between PCA variables and classic variables
 pdf("products/pdf/pca_variables_correlation.pdf")
 rescore <- cor(quantitative_data, res_PCA$scores)
-corrplot(rescore)
+corrplot(rescore, method = "color", tl.col = "black", tl.srt = 45)
 dev.off()
 
 # Percentage of variability of each variable in each P.C.
 pdf("products/pdf/pca_explained_variability.pdf")
-corrplot(rescore ** 2)
+corrplot(rescore ** 2, method = "color", tl.col = "black", tl.srt = 45)
 dev.off()
 
 # Correlation Circle
