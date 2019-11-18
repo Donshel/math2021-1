@@ -18,11 +18,13 @@ quantitative_data <- data[quantitative_cols]
 
 ## 1. Robust correlation matrix
 set.seed(0)
-h <- floor(0.75 * dim(data)[1])
+h <- floor((dim(quantitative_data)[1] + dim(quantitative_data)[2] + 1) / 2)
 robust <- cov.rob(quantitative_data, cor = TRUE, quantile.used = h, method = "mcd")
 
+
+classic_cor <- cor(quantitative_data)
 pdf("products/pdf/classic_correlation.pdf")
-corrplot(cor(quantitative_data), method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
+corrplot(classic_cor, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
 dev.off()
 
 pdf("products/pdf/robust_correlation.pdf")
@@ -33,7 +35,7 @@ dev.off()
 
 ### 2.a Classic covariance
 classic_cov <- cov(quantitative_data)
-qgraph(classic_cov, fade = FALSE, edge.labels = TRUE, filetype = "pdf", filename = "products/pdf/qgraph_classic_cov")
+qgraph(solve(as.matrix(classic_cov)), fade = FALSE, edge.labels = TRUE, diag = FALSE, minimum = 1e-3, filetype = "pdf", filename = "products/pdf/qgraph_classic_cov")
 
 ### 2.b L1-regularized covariance
 
@@ -46,7 +48,7 @@ p <- dim(quantitative_data)[2]
 
 for (i in 1:length(lambda)) {
 	l1reg <- huge(classic_cov, lambda[i], method = "glasso", cov.output = TRUE)
-	l1prec <- solve(as.matrix(l1reg$cov[[1]]))
+	l1prec <- l1reg$icov[[1]]
 	BIC[i] <- -n * l1reg$loglik +
 		log(n) * (p + sum(l1prec[upper.tri(l1prec, diag = TRUE)] != 0))
 }
@@ -59,7 +61,8 @@ lambda <- lambda[which.min(BIC)]
 #### L1-regularization with optimal lambda
 l1reg <- huge(classic_cov, lambda, method = "glasso", cov.output = TRUE)
 l1_cov <- l1reg$cov[[1]]
+
 rownames(l1_cov) <- rownames(classic_cov)
 colnames(l1_cov) <- colnames(classic_cov)
 
-qgraph(l1_cov, fade = FALSE, edge.labels = TRUE, filetype = "pdf", filename = "products/pdf/qgraph_l1_cov")
+qgraph(solve(as.matrix(l1_cov)), fade = FALSE, edge.labels = TRUE, diag = FALSE, minimum = 1e-3, filetype = "pdf", filename = "products/pdf/qgraph_l1_cov")
