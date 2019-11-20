@@ -1,5 +1,6 @@
 # Libraries
 library(Rtsne)
+library(MASS)
 library(rgl)
 
 # ---------- PART 3.3.2 : tSNE Analysis ----------
@@ -26,7 +27,7 @@ sorted_maha <- sort(robust_maha, index.return = TRUE)
 ten_outlyings <- sorted_maha$ix[1:20]
 
 pdf("products/pdf/tSNE.pdf")
-tSNE = Rtsne(quantitative_data)
+tSNE = Rtsne(quantitative_data, perplexity=20)
 plot(tSNE$Y, asp = 1, col = 8, xlab = "X1", ylab = "X2")
 points(tSNE$Y[ten_outlyings,], col = "red")
 grid()
