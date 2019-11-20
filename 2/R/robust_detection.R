@@ -60,6 +60,16 @@ non_outlying <- anti_join(quantitative_data, outlying_obs_rob)
 common_outliers <- inner_join(outlying_obs_classic, outlying_obs_rob)
 only_robust_outliers <- anti_join(outlying_obs_rob, outlying_obs_classic)
 
+## Plot boxplots of quantitative data (outlying vs not outlying)
+boxplot_data <- quantitative_data
+boxplot_data["rob_outlying"] = FALSE
+boxplot_data[outlying_rob_idx, "rob_outlying"] = TRUE
+
+melted <- melt(boxplot_data)
+plt <- ggplot(melted, aes(x = rob_outlying, y = value)) + geom_boxplot()
+plt <- plt + facet_wrap( ~ variable, scales = "free") + labs(x = "", y = "")
+ggsave("products/pdf/boxplots_outliers.pdf", plt) 
+
 ## Plot histograms of quantitative data (outlying and non outlying)
 melted <- melt(quantitative_data)
 plt <- ggplot(melted, aes(x = value)) + geom_histogram()
@@ -70,7 +80,7 @@ ggsave("products/pdf/histograms.pdf", plt)
 melted <- melt(non_outlying)
 plt <- ggplot(melted, aes(x = value)) + geom_histogram()
 plt <- plt + facet_wrap( ~ variable, scales = "free") + labs(x = "", y = "")
-ggsave("products/pdf/histograms_non_outlying.pdf", plt)
+ggsave("products/pdf/histograms_non_outlying.pdf", plt) 
 
 ## Plot histograms of common outlying observations
 melted <- melt(common_outliers)
@@ -88,7 +98,7 @@ ggsave("products/pdf/histograms_robust_only.pdf", plt)
 melted <- melt(outlying_obs_rob)
 plt <- ggplot(melted, aes(x = value)) + geom_histogram()
 plt <- plt + facet_wrap( ~ variable, scales = "free") + labs(x = "", y = "")
-ggsave("products/pdf/histograms_robust_all.pdf", plt)
+ggsave("products/pdf/histograms_robust_all.pdf", plt) 
 
 ## Compute rates for O3: 
 # - the rate of outlying observations having a concentration > maximum concentration of non outlying
