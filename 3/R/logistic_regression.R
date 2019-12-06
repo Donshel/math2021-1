@@ -78,3 +78,37 @@ print(sensitivity)
 specificity <- sens_or_spec(conf_mat, spec = TRUE)
 print(specificity)
 
+# Plot ROC curve
+ROC_maker <- function(scores, memberships) {
+  cutoff <- sort(scores)[1:(length(scores)-1)]
+  sensitivity <- rep(0, length(cutoff))
+  specificity <- rep(0, length(cutoff))
+  idx <- 1
+  for (cut in cutoff) {
+    data <- as.data.frame(scores)
+    data["Membership"] <- as.integer(data > cut)
+    
+    confusion_matrix <- table(memberships, data[, "Membership"])
+    sensitivity[idx] <- sens_or_spec(confusion_matrix)
+    specificity[idx] <- sens_or_spec(confusion_matrix, spec = TRUE)
+    idx <- idx + 1
+  }
+  sensitivity <- c(sensitivity, 0)
+  specificity <- c(specificity, 1)
+  plot(1 - specificity, sensitivity, type="l")
+  
+  return(list(spec = (1 - specificity), sens = sensitivity))
+}
+
+ROC <- ROC_maker(LOO_Posterior, alert)
+
+# Compute AUC
+AUC <- function(ROCx, ROCy)
+{
+  n <- length(ROCx)
+  base <- ROCx[1:(n-1)] - ROCx[2:n]
+  height <- ROCy[2:n]
+  return(sum(base*height))
+}
+auc <- AUC(ROCx = ROC$spec, ROCy = ROC$sens)
+
