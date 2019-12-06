@@ -1,4 +1,5 @@
-# Libraries
+# Library
+library(MASS)
 
 # ------------- PART 3 : Logistic Discriminant -------------- 
 data <- read.table("products/csv/binarized.csv", header = TRUE, na.strings = NA, sep = ",")
@@ -12,9 +13,11 @@ print(linear_discriminant)
 prop_discriminant = linear_discriminant$svd^2/sum(linear_discriminant$svd^2)
 print(prop_discriminant)
 
-lda_scores <- as.matrix(data[, quantitative_var]) %*% as.matrix(linear_discriminant$scaling)
-c_lda_scores <- scale(lda_scores, center = TRUE, scale = FALSE)
-plot(c_lda_scores, alert)
+lda_scores <- scale(as.matrix(data[, quantitative_var])) %*% as.matrix(linear_discriminant$scaling)
+#c_lda_scores <- scale(lda_scores, center = TRUE, scale = FALSE)
+samples <- sample(length(alert), 100)
+plot(lda_scores[samples], alert[samples])
+boxplot(lda_scores ~ alert, outline=FALSE)
 
 g <- 2
 n <- dim(data)[1]
