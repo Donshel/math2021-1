@@ -5,20 +5,14 @@ library(MASS)
 
 # ------------- PART 2 : Logistic Regression Model -------------- 
 data <- read.table("products/csv/binarized.csv", header = TRUE, na.strings = NA, sep = ",")
+attach(data)
 
 # Part 1 : Finding a good logistic model
 
 explanatory_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd', 'wdir')
 quantitative_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd')
-  
 
-## Convert the compass-like wind direction ("wdir") to radians from east direction, going counter-clockwise 
-compass <- c("E", "ENE", "NE", "NNE", "N", "NNW", "NW", "WNW", "W", "WSW", "SW", "SSW", "S", "SSE", "SE", "ESE")
-angles <- c(seq(0, 15, 1) * pi / 8)
-data$wdir <- angles[match(data$wdir, compass)]
-attach(data)
 
-corrplot::corrplot(cor(data[, quantitative_var]))
 linear_classification <- glm(alert ~ year + month + temp + pres + dewp + rain + wspd + wdir, family = binomial(link = "logit"))
 summary(linear_classification)
 # From the summary, we see that all explanatory variables seem to have an importance influence on the logistic model.
@@ -27,7 +21,7 @@ summary(linear_classification)
 # variable, and thus we cannot conclude to the non-significance any variable.
 
 # Draw correlation plot of the explanatory variables
-corrplot(cor(data[, explanatory_var]))
+corrplot(cor(data[, quantitative_var]))
 # From the correlation plot, we can clearly see strong correlation between the atmospherical variables.
 # A solution would be to use principal component analysis to get rid of this multicolinearity.
 # BUT IS MULTICOLINEARITY A REAL PROBLEM HERE?????
@@ -80,4 +74,7 @@ sens_or_spec <- function(confusion_matrix, spec = FALSE) {
   }
 }
 sensitivity <- sens_or_spec(conf_mat)
+print(sensitivity)
 specificity <- sens_or_spec(conf_mat, spec = TRUE)
+print(specificity)
+
