@@ -20,7 +20,10 @@ summary(linear_classification)
 # variable, and thus we cannot conclude to the non-significance any variable.
 
 # Draw correlation plot of the explanatory variables
-corrplot(cor(data[, explanatory_var]))
+correlation_plot <- cor(data[, explanatory_var])
+pdf("products/pdf/correlation_plot.pdf")
+corrplot(correlation_plot, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
+dev.off()
 # From the correlation plot, we can clearly see strong correlation between the atmospherical variables.
 # A solution would be to use principal component analysis to get rid of this multicolinearity.
 # BUT IS MULTICOLINEARITY A REAL PROBLEM HERE?????
