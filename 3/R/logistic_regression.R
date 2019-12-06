@@ -14,32 +14,21 @@ explanatory_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd', 'w
 
 linear_classification <- glm(alert ~ year + month + temp + pres + dewp + rain + wspd + wdir, family = binomial(link = "logit"))
 summary(linear_classification)
-# From the summary, we see that all explanatory variables seem to have an importance influence on the logistic model.
-# The last column (Pr(> |z|)) represents the probability that the corresponding coefficient should be equal to 0
-# instead of the 'estimate' value. From these probabilities, we cannot conclude to the exclusion of a particular
-# variable, and thus we cannot conclude to the non-significance any variable.
 
 # Draw correlation plot of the explanatory variables
 correlation_plot <- cor(data[, explanatory_var])
 pdf("products/pdf/correlation_plot.pdf")
 corrplot(correlation_plot, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
 dev.off()
-# From the correlation plot, we can clearly see strong correlation between the atmospherical variables.
-# A solution would be to use principal component analysis to get rid of this multicolinearity.
-# BUT IS MULTICOLINEARITY A REAL PROBLEM HERE?????
 
 # Compute VIF scores to check for multicolinearity
 VIF_scores <- vif(linear_classification)
 print(VIF_scores)
-# From these scores, we can again notice multicolinearity between the atmospherical variables.
-# VIF scores look problematic for dewp and temp, as they are bigger than 10.
 
 # Conduct variable selection using backward selection.
-# The minimal AIC is obtained when no variables are removed.
 stepAIC(linear_classification)
 
 # Conduct variable selection using forward selection.
-# Again, we see that the full model is the optimal one, as the AIC is minimized.
 null_model <- glm(alert ~ 1, family = binomial(link = "logit"))
 stepAIC(null_model, scope = alert ~ year + month + temp + pres + dewp + rain + wspd + wdir, direction = "forward")
 
