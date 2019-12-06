@@ -23,7 +23,7 @@ summary(data)
 # source: <https://www.who.int/fr/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health>
 
 pollutants <- c('PM2.5', 'PM10', 'SO2', 'NO2', 'O3')
-recommandations <- c(25, 50, 20, 200, 100)
+recommandations <- c(25, 50, 20, 200, 100) # ajust 100 for O3??
 
 surpass <- function(pollutants, thresholds) {
   unfullfilled_recommendations <- as.data.frame(t(apply(pollutants, 1, function(x) { x > thresholds })))

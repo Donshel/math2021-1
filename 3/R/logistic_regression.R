@@ -7,7 +7,10 @@ attach(data)
 # Part 1
 
 explanatory_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd', 'wdir')
+quantitative_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd')
+  
 
+corrplot::corrplot(cor(data[, quantitative_var]))
 linear_classification <- glm(alert ~ year + month + temp + pres + dewp + rain + wspd + wdir, family = binomial(link = "logit"))
 summary(linear_classification)
 
