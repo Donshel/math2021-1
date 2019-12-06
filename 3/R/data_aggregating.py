@@ -48,6 +48,8 @@ data = data.groupby(['year', 'month']).mean()
 
 # Add the predominant wind direction
 data['wdir'] = wdir
+wind_dirs = {"E": 0, "ENE": 1, "NE" : 2, "NNE" : 3, "N" : 4, "NNW" : 5, "NW" : 6, "WNW" : 7, "W" : 8, "WSW" : 9, "SW" : 10, "SSW" : 11, "S" : 12, "SSE" : 13, "SE" : 14, "ESE" : 15, "NA" : np.nan}
+data['wdir'] = data['wdir'].apply(lambda x: wind_dirs[x] * np.pi / 8)
 
 # Output the data
 directory = os.path.dirname('products/csv/')
