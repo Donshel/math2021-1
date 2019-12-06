@@ -2,6 +2,7 @@
 library(corrplot)
 library(car)
 library(MASS)
+library(ggplot2)
 
 # ------------- PART 2 : Logistic Regression Model -------------- 
 data <- read.table("products/csv/binarized.csv", header = TRUE, na.strings = NA, sep = ",")
@@ -62,12 +63,16 @@ mean(errors)
 # Look at fitted values
 fitted_values <- linear_classification$fitted.values
 summary(fitted_values)
-boxplot(fitted_values)
+plt <- ggplot(data.frame(fitted_values), aes(y = fitted_values)) + geom_boxplot()
+plt <- plt + labs(x = "", y = "Fitted values")
+ggsave("products/pdf/boxplots_fitted_values.pdf", plt)
 
 # Look at Pearson residuals
 residuals <- resid(linear_classification, type = "pearson")
 summary(residuals)
-boxplot(residuals)
+plt <- ggplot(data.frame(residuals), aes(y = residuals)) + geom_boxplot()
+plt <- plt + labs(x = "", y = "Pearson residuals")
+ggsave("products/pdf/boxplots_residuals.pdf", plt)
 
 # Part 2 : Leave-One-Out cross-validation
 # Use full model
