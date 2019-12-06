@@ -138,4 +138,4 @@ AUC <- function(ROCx, ROCy)
   return(sum(base*height))
 }
 auc <- AUC(ROCx = ROC$spec, ROCy = ROC$sens)
-
+print(auc)
