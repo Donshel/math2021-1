@@ -10,20 +10,8 @@ attach(data)
 
 summary(data)
 
-# World Health Organization (WHO) Recommandations
-
-# | Pollutant  | moyenne_annuelle | moyenne_24h  | moyenne_8h | moyenne_10min  |
-# |:----------:|:----------------:|:------------:|:----------:|:--------------:|
-# | PM2.5      | 10µg/m3          | 25µg/m3      | /          |                |
-# | PM10       | 20µg/m3          | 50µg/m3      | /          |                |
-# | SO2        | /                | 20µg/m3      | /          | 500µg/m3       |
-# | NO2        | 40µg/m3          | 200µg/m3     | /          |                |
-# | O3         | /                | /            | 100µg/m3   |                |
-
-# source: <https://www.who.int/fr/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health>
-
 pollutants <- c('PM2.5', 'PM10', 'SO2', 'NO2', 'O3')
-recommandations <- c(25, 50, 20, 200, 100) # ajust 100 for O3??
+recommandations <- c(25, 50, 20, 200, 100)
 
 surpass <- function(pollutants, thresholds) {
   unfullfilled_recommendations <- as.data.frame(t(apply(pollutants, 1, function(x) { x > thresholds })))
