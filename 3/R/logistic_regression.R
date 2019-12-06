@@ -10,7 +10,6 @@ attach(data)
 # Part 1 : Finding a good logistic model
 
 explanatory_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd', 'wdir')
-quantitative_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd')
 
 
 linear_classification <- glm(alert ~ year + month + temp + pres + dewp + rain + wspd + wdir, family = binomial(link = "logit"))
@@ -21,7 +20,7 @@ summary(linear_classification)
 # variable, and thus we cannot conclude to the non-significance any variable.
 
 # Draw correlation plot of the explanatory variables
-corrplot(cor(data[, quantitative_var]))
+corrplot(cor(data[, explanatory_var]))
 # From the correlation plot, we can clearly see strong correlation between the atmospherical variables.
 # A solution would be to use principal component analysis to get rid of this multicolinearity.
 # BUT IS MULTICOLINEARITY A REAL PROBLEM HERE?????
@@ -77,4 +76,38 @@ sensitivity <- sens_or_spec(conf_mat)
 print(sensitivity)
 specificity <- sens_or_spec(conf_mat, spec = TRUE)
 print(specificity)
+
+# Plot ROC curve
+ROC_maker <- function(scores, memberships) {
+  cutoff <- sort(scores)[1:(length(scores)-1)]
+  sensitivity <- rep(0, length(cutoff))
+  specificity <- rep(0, length(cutoff))
+  idx <- 1
+  for (cut in cutoff) {
+    data <- as.data.frame(scores)
+    data["Membership"] <- as.integer(data > cut)
+    
+    confusion_matrix <- table(memberships, data[, "Membership"])
+    sensitivity[idx] <- sens_or_spec(confusion_matrix)
+    specificity[idx] <- sens_or_spec(confusion_matrix, spec = TRUE)
+    idx <- idx + 1
+  }
+  sensitivity <- c(sensitivity, 0)
+  specificity <- c(specificity, 1)
+  plot(1 - specificity, sensitivity, type="l")
+  
+  return(list(spec = (1 - specificity), sens = sensitivity))
+}
+
+ROC <- ROC_maker(LOO_Posterior, alert)
+
+# Compute AUC
+AUC <- function(ROCx, ROCy)
+{
+  n <- length(ROCx)
+  base <- ROCx[1:(n-1)] - ROCx[2:n]
+  height <- ROCy[2:n]
+  return(sum(base*height))
+}
+auc <- AUC(ROCx = ROC$spec, ROCy = ROC$sens)
 
