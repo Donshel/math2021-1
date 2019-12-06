@@ -10,7 +10,6 @@ attach(data)
 # Part 1 : Finding a good logistic model
 
 explanatory_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd', 'wdir')
-quantitative_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd')
 
 
 linear_classification <- glm(alert ~ year + month + temp + pres + dewp + rain + wspd + wdir, family = binomial(link = "logit"))
@@ -21,7 +20,7 @@ summary(linear_classification)
 # variable, and thus we cannot conclude to the non-significance any variable.
 
 # Draw correlation plot of the explanatory variables
-corrplot(cor(data[, quantitative_var]))
+corrplot(cor(data[, explanatory_var]))
 # From the correlation plot, we can clearly see strong correlation between the atmospherical variables.
 # A solution would be to use principal component analysis to get rid of this multicolinearity.
 # BUT IS MULTICOLINEARITY A REAL PROBLEM HERE?????
