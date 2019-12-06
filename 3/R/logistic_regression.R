@@ -25,28 +25,59 @@ dev.off()
 VIF_scores <- vif(linear_classification)
 print(VIF_scores)
 
+# As there is multicolinearity between temp, pres, dewp, try each model by introducing one of them
+# And compare the respective coefficients to the ones obtained in the full model.
+# In full model: temp ~ -0.24125; pres ~ -0.07032, dewp ~ 0.15057
+# In respective models: temp ~ -0.023704, pres ~ -0.0001157, dewp ~ -0.0005504
+glm_temp <- glm(alert ~ year + month + temp + rain + wspd + wdir, family = binomial(link = "logit"))
+summary(glm_temp)
+
+glm_pres <- glm(alert ~ year + month + pres + rain + wspd + wdir, family = binomial(link = "logit"))
+summary(glm_pres)
+
+glm_dewp <- glm(alert ~ year + month + dewp + rain + wspd + wdir, family = binomial(link = "logit"))
+summary(glm_dewp)
+
+# As multicolinearity introduces an issue here, build model with PC1 of pres, temp, dewp and with remaining variables
+pca <- princomp(data[c('temp', 'pres', 'dewp')])
+modified_explanatory_var <- c('year', 'month', 'rain', 'wspd', 'wdir', 'PC1')
+modified_data <- data[c('year', 'month', 'rain', 'wspd', 'wdir', 'alert')]
+modified_data['PC1'] <- pca$scores[, 1]
+attach(modified_data)
+linear_classification <- glm(alert ~ year + month + rain + wspd + wdir + PC1, family = binomial(link = "logit"))
+summary(linear_classification)
+
 # Conduct variable selection using backward selection.
 stepAIC(linear_classification)
 
 # Conduct variable selection using forward selection.
 null_model <- glm(alert ~ 1, family = binomial(link = "logit"))
-stepAIC(null_model, scope = alert ~ year + month + temp + pres + dewp + rain + wspd + wdir, direction = "forward")
+stepAIC(null_model, scope = alert ~ year + month + PC1 + rain + wspd + wdir, direction = "forward")
 
 # Predict (should avoid using predict)
-predictions <- (predict.glm(object = linear_classification, newdata = data[, explanatory_var], type = "response") > 0.5)
-errors <- (data['alert'] != predictions) # /!\ error on the TRAINING set ()
+predictions <- (predict.glm(object = linear_classification, newdata = modified_data[, modified_explanatory_var], type = "response") > 0.5)
+errors <- (modified_data['alert'] != predictions) # /!\ error on the TRAINING set ()
 mean(errors)
 
+# Look at fitted values
+fitted_values <- linear_classification$fitted.values
+summary(fitted_values)
+boxplot(fitted_values)
+
+# Look at Pearson residuals
+residuals <- resid(linear_classification, type = "pearson")
+summary(residuals)
+boxplot(residuals)
 
 # Part 2 : Leave-One-Out cross-validation
 # Use full model
-LOO_Posterior <- rep(0, dim(data)[1])
-for (i in 1:dim(data)[1]) {
-  idx <- rep(TRUE, dim(data)[1])
+LOO_Posterior <- rep(0, dim(modified_data)[1])
+for (i in 1:dim(modified_data)[1]) {
+  idx <- rep(TRUE, dim(modified_data)[1])
   idx[i] <- FALSE
   
-  linear_classification <- glm(alert[idx] ~ year[idx] + month[idx] + temp[idx] + pres[idx] + dewp[idx] + rain[idx] + wspd[idx] + wdir[idx], family = binomial(link = "logit"))
-  prediction <- linear_classification$coefficients %*% c(1, as.matrix(data[i, explanatory_var]))
+  linear_classification <- glm(alert[idx] ~ year[idx] + month[idx] + PC1[idx] + rain[idx] + wspd[idx] + wdir[idx], family = binomial(link = "logit"))
+  prediction <- linear_classification$coefficients %*% c(1, as.matrix(modified_data[i, modified_explanatory_var]))
   LOO_Posterior[i] <- exp(prediction)/(1 + exp(prediction))
 }
 
