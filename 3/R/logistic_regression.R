@@ -45,6 +45,7 @@ modified_explanatory_var <- c('year', 'month', 'rain', 'wspd', 'wdir', 'PC1')
 modified_data <- data[c('year', 'month', 'rain', 'wspd', 'wdir', 'alert')]
 modified_data['PC1'] <- pca$scores[, 1]
 attach(modified_data)
+
 linear_classification <- glm(alert ~ year + month + rain + wspd + wdir + PC1, family = binomial(link = "logit"))
 summary(linear_classification)
 
@@ -55,33 +56,37 @@ stepAIC(linear_classification)
 null_model <- glm(alert ~ 1, family = binomial(link = "logit"))
 stepAIC(null_model, scope = alert ~ year + month + PC1 + rain + wspd + wdir, direction = "forward")
 
-# Predict (should avoid using predict)
-predictions <- (predict.glm(object = linear_classification, newdata = modified_data[, modified_explanatory_var], type = "response") > 0.5)
+# Remove rain from model
+modified_model <- glm(alert ~ year + month + wspd + wdir + PC1, family = binomial(link = "logit"))
+modified_explanatory_var <- c('year', 'month', 'wspd', 'wdir', 'PC1')
+
+# Predict 
+predictions <- (predict.glm(object = modified_model, newdata = modified_data[, modified_explanatory_var], type = "response") > 0.5)
 errors <- (modified_data['alert'] != predictions) # /!\ error on the TRAINING set ()
 mean(errors)
 
 # Look at fitted values
-fitted_values <- linear_classification$fitted.values
+fitted_values <- modified_model$fitted.values
 summary(fitted_values)
 plt <- ggplot(data.frame(fitted_values), aes(y = fitted_values)) + geom_boxplot()
 plt <- plt + labs(x = "", y = "Fitted values")
 ggsave("products/pdf/boxplots_fitted_values.pdf", plt)
 
 # Look at Pearson residuals
-residuals <- resid(linear_classification, type = "pearson")
+residuals <- resid(modified_model, type = "pearson")
 summary(residuals)
 plt <- ggplot(data.frame(residuals), aes(y = residuals)) + geom_boxplot()
 plt <- plt + labs(x = "", y = "Pearson residuals")
 ggsave("products/pdf/boxplots_residuals.pdf", plt)
 
 # Part 2 : Leave-One-Out cross-validation
-# Use full model
+# Use model with PC1 and without rain
 LOO_Posterior <- rep(0, dim(modified_data)[1])
 for (i in 1:dim(modified_data)[1]) {
   idx <- rep(TRUE, dim(modified_data)[1])
   idx[i] <- FALSE
   
-  linear_classification <- glm(alert[idx] ~ year[idx] + month[idx] + PC1[idx] + rain[idx] + wspd[idx] + wdir[idx], family = binomial(link = "logit"))
+  linear_classification <- glm(alert[idx] ~ year[idx] + month[idx] + PC1[idx] + wspd[idx] + wdir[idx], family = binomial(link = "logit"))
   prediction <- linear_classification$coefficients %*% c(1, as.matrix(modified_data[i, modified_explanatory_var]))
   LOO_Posterior[i] <- exp(prediction)/(1 + exp(prediction))
 }
