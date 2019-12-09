@@ -12,7 +12,7 @@ attach(data)
 
 explanatory_var <- c('year', 'month', 'temp', 'pres', 'dewp', 'rain', 'wspd', 'wdir')
 
-
+# Full model
 linear_classification <- glm(alert ~ year + month + temp + pres + dewp + rain + wspd + wdir, family = binomial(link = "logit"))
 summary(linear_classification)
 
@@ -133,6 +133,7 @@ ROC_maker <- function(scores, memberships) {
 }
 
 ROC <- ROC_maker(LOO_Posterior, alert)
+abline(a = 0, b = 1, col = "red")
 
 # Compute AUC
 AUC <- function(ROCx, ROCy)

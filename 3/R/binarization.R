@@ -35,6 +35,3 @@ exceeding_rates
 binarized_data <- subset(data, select = -c(PM2.5, PM10, SO2, NO2, O3))
 binarized_data['alert'] <- unfullfilled_recommandations_with_margins['alert']
 write.table(binarized_data, "products/csv/binarized.csv", sep = ",", quote = FALSE, row.names = FALSE)
-
-# Finally, 1406 rows, do we randomly sample 500 out of them ? Or we keep them all and in our 
-# other code, we create a training set of 500 rows and a test set of 906 rows.
