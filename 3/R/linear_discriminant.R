@@ -102,14 +102,14 @@ print(conf_mat)
 
 # 4. Homoscedasticity
 
-cor <- cor(quantitative_data[alert == 0,])
-pdf("products/pdf/corr_group_false.pdf")
-corrplot(cor, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
+cov <- cov(quantitative_data[alert == 0,])
+pdf("products/pdf/cov_group_false.pdf")
+corrplot(cov, is.corr=FALSE, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
 dev.off()
 
-cor <- cor(quantitative_data[alert == 1,])
-pdf("products/pdf/corr_group_true.pdf")
-corrplot(cor, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
+cov <- cov(quantitative_data[alert == 1,])
+pdf("products/pdf/cov_group_true.pdf")
+corrplot(cov, is.corr=FALSE, method = "color", type = "lower", tl.col = "black", tl.pos = "ld", tl.srt = 45)
 dev.off()
 
 var(g0)
