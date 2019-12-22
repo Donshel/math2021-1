@@ -11,3 +11,9 @@ These projects have been developed using [R](https://www.r-project.org/).
 * **Yann Claes** - [yannclaes](https://github.com/yannclaes)
 * **Gaspard Lambrechts** - [lgaspard](https://github.com/lgaspard)
 * **François Rozet** - [Donshel](https://github.com/Donshel)
+
+## Scores
+
+* Project 1 received the score of 21.5/30.
+* Project 2 received the score of 20.25/25.
+* Project 3 received the score of 17.25/20.
