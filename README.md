@@ -10,7 +10,7 @@ These projects have been developed using [R](https://www.r-project.org/).
 
 * **Yann Claes** - [yannclaes](https://github.com/yannclaes)
 * **Gaspard Lambrechts** - [lgaspard](https://github.com/lgaspard)
-* **François Rozet** - [Donshel](https://github.com/Donshel)
+* **François Rozet** - [francois-rozet](https://github.com/francois-rozet)
 
 ## Scores
 
